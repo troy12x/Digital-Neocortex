@@ -1,0 +1,430 @@
+\documentclass{article}
+
+
+\usepackage{PRIMEarxiv}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{amsmath}        % math environments and equations
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{lipsum}
+\usepackage{fancyhdr}       % header
+\usepackage{graphicx}       % graphics
+\graphicspath{{media/}}     % organize your images and other figures under media/ folder
+
+%Header
+\pagestyle{fancy}
+\thispagestyle{empty}
+\rhead{ \textit{ }} 
+
+% Update your Headers here
+\fancyhead[LO]{}
+\fancyhead[CO]{\underline{Digital Neocortex for LNNs}}
+\fancyhead[RO]{}
+% \fancyhead[RE]{Firstauthor and Secondauthor} % Firstauthor et al. if more than 2 - must use \documentclass[twoside]{article}
+
+
+
+  
+%% Title
+\title{Enhancing Liquid Neural Networks with Digital Neocortex
+%%%% Cite as
+%%%% Update your official citation here when published 
+
+}
+
+\author{
+  Eyad Gomaa \\
+  AI Researcher At SILX AI \\
+  \texttt{eyad@silx.ai} \\
+  %% \AND
+  %% Coauthor \\
+  %% Affiliation \\
+  %% Address \\
+  %% \texttt{email} \\
+  %% \And
+  %% Coauthor \\
+  %% Affiliation \\
+  %% Address \\
+  %% \texttt{email} \\
+  %% \And
+  %% Coauthor \\
+  %% Affiliation \\
+  %% Address \\
+  %% \texttt{email} \\
+}
+
+
+\begin{document}
+\maketitle
+
+
+\begin{abstract}
+We present the Digital Neocortex, a novel neural network architecture that enhances Liquid Neural Networks (LNNs) with computational principles inspired by the human neocortex. While LNNs leverage continuous-time neural dynamics through ordinary differential equations (ODEs), they lack the organizational structure found in biological neural systems. Our architecture incorporates cortical columns implemented as a Mixture of Experts, sparse activation mechanisms, Hebbian learning, and space-time processing layers to create a more brain-like computational model. We integrate these biologically-inspired components with the mathematical foundation of LNNs and their dynamic weight parameterization. Experimental results demonstrate that the Digital Neocortex achieves perfect accuracy on pattern recognition tasks, significantly outperforming standard LNNs and even the enhanced Dynamic Weight LNN variant. This work represents a significant step toward neural architectures that more closely mimic the computational principles of the human brain while maintaining the practical advantages of modern deep learning approaches.
+\end{abstract}
+
+
+
+\section{Introduction}
+The human neocortex is the seat of higher-order cognition, responsible for sensory perception, motor control, spatial reasoning, conscious thought, and language. Its remarkable computational capabilities have long inspired artificial neural network designs, from early perceptrons to modern deep learning architectures. However, most current neural networks bear little resemblance to the actual processing mechanisms of the biological neocortex.
+
+Recent advances in Liquid Neural Networks (LNNs) have introduced a paradigm shift in neural network design. Developed by researchers at MIT, LNNs model neurons as continuous-time dynamical systems governed by differential equations, allowing them to adapt their behavior dynamically in response to new data. Unlike traditional neural networks with fixed parameters post-training, LNNs feature dynamic neurons, liquid time-constants, and continuous adaptation capabilities, making them particularly effective for time-series data and changing environments.
+
+While LNNs represent a significant step toward more brain-like computation through their continuous-time neural dynamics, they still lack many of the specialized processing structures and organizational principles that make the biological neocortex so effective. Their very strength the ability to generate rich, dynamic representations creates a new challenge: managing the complexity of these representations in a coherent, task-oriented manner.
+
+Our mission in this paper is to enhance LNNs with the Digital Neocortex a neural architecture that integrates key computational principles derived from the biological neocortex with the continuous-time dynamics of Liquid Neural Networks. The Digital Neocortex is not merely an extension of LNNs but a natural evolution that addresses their limitations while preserving their strengths. By incorporating neocortex-inspired components, we create a structured framework for organizing and directing the dynamic representations that emerge in liquid neural systems.
+
+Our architecture incorporates several critical components that complement and enhance the capabilities of LNNs:
+
+\begin{itemize}
+    \item \textbf{Cortical Columns}: Modular processing units that mimic the columnar organization of the neocortex, implemented through a Mixture of Experts approach.
+    \item \textbf{Sparse Attention}: Mechanisms that activate only a small subset of neurons, reflecting the sparse activation patterns observed in biological neural networks.
+    \item \textbf{Hebbian Learning}: Implementation of the "neurons that fire together wire together" principle through dynamic weight adjustments based on co-activation.
+    \item \textbf{Space-Time Processing}: Separate but integrated processing of spatial and temporal information, similar to the specialized regions of the neocortex.
+\end{itemize}
+
+By combining these components, the Digital Neocortex achieves improved performance on a range of tasks while maintaining computational efficiency. Our experimental results demonstrate that incorporating these biologically-inspired principles enhances the capabilities of continuous-time neural networks, particularly for tasks requiring complex pattern recognition and long-range dependencies.
+
+
+\section{The Problem: Managing Complexity in Liquid Neural Networks}
+\label{sec:problem}
+
+Liquid Neural Networks (LNNs) represent a revolutionary advancement in neural network design through several key innovations:
+
+\begin{itemize}
+    \item \textbf{Dynamic Neurons}: Each neuron functions as a continuous-time dynamical system governed by differential equations, allowing states to evolve over time in response to inputs.
+    \item \textbf{Liquid Time-Constants}: The network can adjust its internal time-constants dynamically, modulating how quickly or slowly it responds to inputs.
+    \item \textbf{Continuous Adaptation}: LNNs can adapt their parameters even after initial training, responding to new situations without requiring complete retraining.
+    \item \textbf{Compact Efficiency}: Despite their dynamic capabilities, LNNs maintain relatively compact model sizes compared to traditional deep networks.
+\end{itemize}
+
+Despite these remarkable capabilities, LNNs suffer from a fundamental limitation: they lack an organizing framework for the multitude of dynamic representations they generate. Their very strength becomes their weakness when faced with complex tasks requiring coordinated processing.
+
+When presented with a task, an LNN generates a wealth of parallel computational paths essentially "thoughts" that evolve continuously over time. The problem is that it produces so many dynamic representations that it cannot effectively coordinate them. These representations flow and transform in a fluid, continuous manner without the structured organization needed to efficiently solve complex tasks.
+
+Imagine giving a complex task to an LNN: it immediately begins generating numerous potential solution paths, ideas, and representations through its dynamic neurons, but has no systematic way to organize, prioritize, or integrate these representations. The result is a computational process that is potentially powerful but chaotic and inefficient like a brilliant mind that cannot focus its attention or organize its ideas.
+
+This is precisely where the Digital Neocortex comes in as a framework to manage and organize these dynamic representations to effectively solve tasks. Just as the biological neocortex provides the organizational structure for human cognition, the Digital Neocortex provides the necessary structure for LNNs to transform their raw computational power into efficient problem-solving.
+
+The biological neocortex solves similar problems through specialized structures and organizing principles:
+
+\begin{itemize}
+    \item Columnar organization that specializes in different types of processing
+    \item Sparse activation that focuses computational resources
+    \item Hierarchical processing that organizes information flow
+    \item Feedback loops that refine and correct processing
+\end{itemize}
+
+By incorporating these principles into LNNs, the Digital Neocortex provides a structured framework for managing continuous-time neural dynamics. It organizes the "thoughts" of the model into specialized processing pathways, focuses attention on the most relevant information, and creates a hierarchical flow that transforms raw inputs into abstract representations.
+
+In essence, the Digital Neocortex does for LNNs what the biological neocortex does for the brain: it brings order to complexity, enabling more efficient and effective information processing.
+
+\section{Digital Neocortex Architecture: Enhancing Liquid Neural Networks}
+\label{sec:architecture}
+
+\subsection{What is Digital Neocortex?}
+At its core, the Digital Neocortex is a meta-architecture that guides and organizes the dynamic representations generated by Liquid Neural Networks. It is not merely a collection of components but a structured framework that transforms the chaotic, unorganized "thoughts" of LNNs into coherent, efficient neural processing. The Digital Neocortex achieves this through a mathematical formulation that can be expressed as:
+
+\begin{equation}
+F_{DN}(x, t) = \Phi(\Psi(\Omega(x, t)), t)
+\end{equation}
+
+where $F_{DN}$ represents the Digital Neocortex transformation, $\Omega$ is the cortical column organization function, $\Psi$ is the sparse attention mechanism, and $\Phi$ is the space-time processing integration. This formulation encapsulates how the Digital Neocortex guides dynamic neural networks by imposing organizational structure on their representations.
+
+\subsection{How Digital Neocortex Guides Dynamic Networks}
+The Digital Neocortex guides Liquid Neural Networks through three primary mechanisms:
+
+\begin{enumerate}
+    \item \textbf{Specialization}: It channels dynamic representations into specialized processing pathways (cortical columns) that focus on different aspects of the input.
+    \item \textbf{Attention Direction}: It focuses computational resources on the most relevant information through sparse attention mechanisms.
+    \item \textbf{Temporal Organization}: It structures the flow of information over time, creating a coherent sequence of processing steps.
+\end{enumerate}
+
+This guidance transforms the behavior of LNNs from generating many parallel, uncoordinated dynamic representations to producing organized, task-relevant processing. The Digital Neocortex doesn't replace the dynamic capabilities of LNNs but rather harnesses and directs them toward efficient problem-solving.
+
+Each of these mechanisms has a specific mathematical formulation that transforms the unstructured dynamics of LNNs into organized processing:
+
+\subsubsection{1. Specialization via Cortical Column Organization ($\Omega$)}
+The specialization function $\Omega$ channels dynamic representations into specialized processing pathways (cortical columns) that focus on different aspects of the input. This is mathematically formulated as:
+
+\begin{equation}
+\Omega(x, t) = \sum_{i=1}^{E} G_i(x, t) \cdot Expert_i(x, t)
+\end{equation}
+
+where $E$ is the number of experts (cortical columns), and $G_i(x, t)$ is a dynamic gating function that determines how much each expert contributes to processing the input at time $t$. The gating function is defined as:
+
+\begin{equation}
+G_i(x, t) = \frac{\exp(R_i(x, t))}{\sum_{j=1}^{E} \exp(R_j(x, t))} \cdot M_i(t)
+\end{equation}
+
+where $R_i(x, t)$ is a relevance score computed by a small router network, and $M_i(t)$ is a sparsity mask that activates only the top-$k$ experts:
+
+\begin{equation}
+M_i(t) = \begin{cases}
+1 & \text{if } R_i(x, t) \text{ is in the top-$k$ values} \\
+0 & \text{otherwise}
+\end{cases}
+\end{equation}
+
+Each expert processes information according to its specialized function:
+
+\begin{equation}
+Expert_i(x, t) = f_i\left(\frac{dx_i(t)}{dt}, x_i(t), t\right)
+\end{equation}
+
+where $f_i$ is a specialized processing function that operates on the continuous-time dynamics of the input. This specialization organizes the chaotic "thoughts" of LNNs into distinct processing pathways, similar to how different regions of the neocortex specialize in specific types of processing.
+
+\subsubsection{2. Attention Direction via Sparse Activation ($\Psi$)}
+The attention direction function $\Psi$ focuses computational resources on the most relevant information through a continuous-time sparse activation mechanism that is consistent with the dynamical systems approach of LNNs. Unlike traditional attention in Transformers, our approach uses coupled differential equations to implement selective focus:
+
+\begin{equation}
+\frac{da_i(t)}{dt} = -\frac{1}{\tau_a}a_i(t) + \sum_j S_{ij}(t)z_j(t) - \lambda \sum_{k \neq i} a_k(t)
+\end{equation}
+
+where $z = \Omega(x, t)$ is the output from the cortical column organization, $a_i(t)$ is the activation level of unit $i$, $S_{ij}(t)$ is a time-dependent connectivity strength, and $\lambda$ is a lateral inhibition parameter that enforces sparsity by having active units suppress other units.
+
+The sparse activation pattern is determined by a threshold function:
+
+\begin{equation}
+\Psi(z, t)_i = \begin{cases}
+a_i(t) & \text{if } a_i(t) > \theta(t) \\
+0 & \text{otherwise}
+\end{cases}
+\end{equation}
+
+where $\theta(t)$ is a dynamic threshold that adapts to maintain a target sparsity level $\rho$:
+
+\begin{equation}
+\frac{d\theta(t)}{dt} = \eta(\bar{a}(t) - \rho)
+\end{equation}
+
+with $\bar{a}(t)$ being the average activation across all units and $\eta$ a learning rate parameter.
+
+The connectivity strengths $S_{ij}(t)$ evolve according to the task context and current state:
+
+\begin{equation}
+S_{ij}(t) = S_{ij}^{base} + \Delta S_{ij}(c(t), z(t))
+\end{equation}
+
+where $c(t)$ is the context vector derived from the current state of the network. This dynamic connectivity allows the network to adapt its focus based on the current processing needs, similar to how biological neural circuits modulate their effective connectivity patterns.
+
+This continuous-time sparse activation mechanism directs the computational resources of the network to the most relevant information streams, effectively implementing an attention-like mechanism that is fully compatible with the dynamical systems approach of LNNs. This dynamic focusing is analogous to how the biological neocortex selectively attends to relevant information while suppressing distractions through lateral inhibition and dynamic thresholding.
+
+\subsubsection{3. Temporal Organization via Space-Time Integration ($\Phi$)}
+The temporal organization function $\Phi$ structures the flow of information over time, creating a coherent sequence of processing steps. This is formulated as:
+
+\begin{equation}
+\Phi(y, t) = \alpha(t, c(t)) \cdot H_S(y) + (1 - \alpha(t, c(t))) \cdot H_T(y, t)
+\end{equation}
+
+where $y = \Psi(\Omega(x, t))$ is the output from the sparse attention mechanism, $H_S$ processes spatial patterns, $H_T$ processes temporal sequences, and $\alpha(t, c(t))$ is a dynamic weighting function that balances spatial and temporal processing based on the context $c(t)$. When processing static patterns, $\alpha$ increases to emphasize spatial relationships; when tracking dynamic changes, it decreases to prioritize temporal information.
+
+The temporal pathway incorporates recurrent processing with adaptive time scales:
+
+\begin{equation}
+H_T(y, t) = \gamma(t) \cdot H_T(y, t-\Delta t) + (1-\gamma(t)) \cdot G(y, t)
+\end{equation}
+
+where $\gamma(t)$ controls how much past information is retained. This recurrent structure allows the network to maintain information over different time scales - from immediate sensory input to long-term context. The gating parameter $\gamma(t) = \sigma(W_\gamma c(t) + b_\gamma)$ adapts based on the context, allowing the network to adjust its temporal memory as needed.
+
+The spatial pathway incorporates a state space model for efficient sequence processing:
+
+\begin{equation}
+G(y, t) = C(s(t)) + D(y)
+\end{equation}
+\begin{equation}
+\frac{ds(t)}{dt} = A(t)s(t) + B(t)y
+\end{equation}
+
+where $s(t)$ is the internal state of the state space model, and $A(t)$, $B(t)$, $C$, and $D$ are learnable parameters that adapt to the temporal context. This temporal organization transforms the continuous flow of LNN dynamics into a structured sequence of processing steps, similar to how the biological neocortex processes information through distinct temporal stages.
+
+\subsection{Conclusion}
+The Digital Neocortex with its core mechanisms already saves computational costs using sparse attention and guides the neural "thoughts" of LNNs into organized processing pathways. This organization is critical for transforming the powerful but chaotic dynamics of LNNs into efficient problem-solving.
+
+\subsection{Enhanced Hebbian Learning for Structured Adaptation}
+While Liquid Neural Networks already feature continuous weight adaptation through their dynamic time constants, the Digital Neocortex enhances this capability by implementing structured Hebbian learning that operates within the organizational framework we've established.
+
+In standard LNNs, weight adaptation occurs primarily through the general dynamics of the system. The Digital Neocortex extends this with targeted Hebbian plasticity that specifically strengthens connections between neurons that consistently co-activate within specialized processing pathways:
+
+\begin{equation}
+\frac{dW_{ij}(t)}{dt} = \eta \cdot (x_i(t) \cdot x_j(t) - \lambda \cdot W_{ij}(t)) \cdot S_{ij}(c(t))
+\end{equation}
+
+where $W_{ij}(t)$ is the weight connecting neurons $i$ and $j$, $\eta$ is the learning rate, $x_i(t)$ and $x_j(t)$ are the activations of the connected neurons, $\lambda$ is a regularization term, and crucially, $S_{ij}(c(t))$ is a structure-aware modulation factor that depends on the context $c(t)$ and the positions of neurons $i$ and $j$ within the cortical column organization.
+
+This structure-aware Hebbian learning provides several enhancements over the basic adaptability of LNNs:
+
+\textbf{1. Pathway-Specific Adaptation:} Rather than uniform adaptation across the network, our approach modulates learning rates based on the specialized function of each cortical column:
+
+\begin{equation}
+S_{ij}(c(t)) = \sum_{k=1}^{E} G_k(c(t)) \cdot I(i,j \in E_k)
+\end{equation}
+
+where $G_k(c(t))$ is the gating value for expert $k$ given context $c(t)$, and $I(i,j \in E_k)$ is an indicator function that equals 1 if both neurons belong to expert $k$ and 0 otherwise. This ensures that adaptation is strongest within the most relevant specialized pathways for the current context.
+
+\textbf{2. Structured Memory Formation:} The Digital Neocortex organizes memory formation according to the cortical column structure, creating specialized memory traces within each processing pathway:
+
+\begin{equation}
+M_{ij}^k = \int_{t-T}^{t} x_i(\tau) \cdot x_j(\tau) \cdot G_k(c(\tau)) \, d\tau
+\end{equation}
+
+where $M_{ij}^k$ represents the memory strength between neurons $i$ and $j$ within expert $k$ over a time window $T$. This creates a form of distributed memory that is organized according to the specialized function of each pathway.
+
+\textbf{3. Adaptive Routing:} Perhaps most importantly, our enhanced Hebbian learning dynamically modifies the routing of information through the network by strengthening the most effective pathways for specific types of inputs:
+
+\begin{equation}
+R_k(x, t) = R_k^{base}(x) + \sum_{i,j \in E_k} M_{ij}^k \cdot x_i(t) \cdot x_j(t)
+\end{equation}
+
+where $R_k(x, t)$ is the routing score for expert $k$, which determines how inputs are directed through the network.
+
+By enhancing the continuous adaptation capabilities of LNNs with structured Hebbian learning, the Digital Neocortex creates a system that not only adapts its weights dynamically but does so in a way that reinforces and refines the specialized processing pathways established by the cortical column organization.
+
+\subsection{Space-Time Processing Layers and Integration}
+The biological neocortex processes information through distinct spatial and temporal pathways that work together to create a coherent understanding of the world. Similarly, our Digital Neocortex implements space-time processing layers that organize the temporal flow of information while preserving spatial relationships. This is perhaps the most critical component for transforming the chaotic "thoughts" of LNNs into structured processing.
+
+\subsubsection{How Space-Time Layers Work with Digital Neocortex}
+The space-time processing component acts as the organizational backbone of the Digital Neocortex, guiding how information flows through the network over time. Here's how it works:
+
+\textbf{1. Separation of Spatial and Temporal Processing:}
+We separate processing into two parallel pathways - one for spatial patterns and one for temporal sequences. The spatial pathway $H_S(x)$ processes relationships between different parts of the input at a single time point, while the temporal pathway $H_T(x, t)$ tracks how patterns evolve over time. This separation allows specialized handling of each dimension, similar to how the dorsal and ventral streams in the visual cortex specialize in "where" and "what" processing.
+
+The combined space-time representation is a weighted mixture of these two pathways:
+\begin{equation}
+H_{ST}(x, t) = \alpha(t, c(t)) \cdot H_S(x) + (1 - \alpha(t, c(t))) \cdot H_T(x, t)
+\end{equation}
+where $\alpha(t, c(t))$ is a dynamic weighting function that adjusts the balance based on the current context $c(t)$. When processing static patterns, $\alpha$ increases to emphasize spatial relationships; when tracking dynamic changes, it decreases to prioritize temporal information.
+
+\textbf{2. Temporal Hierarchy through Recurrent Processing:}
+The temporal pathway incorporates feedback connections that create a hierarchy of timescales, from fast to slow:
+\begin{equation}
+H_T(x, t) = \gamma(t) \cdot H_T(x, t-\Delta t) + (1-\gamma(t)) \cdot G(x, t)
+\end{equation}
+where $\gamma(t)$ controls how much past information is retained. This recurrent structure allows the network to maintain information over different time scales - from immediate sensory input to long-term context. The gating parameter $\gamma(t) = \sigma(W_\gamma c(t) + b_\gamma)$ adapts based on the context, allowing the network to adjust its temporal memory as needed.
+
+\textbf{3. Efficient Sequence Modeling with State Space Models:}
+For processing long sequences efficiently, we integrate state space modeling into the temporal pathway:
+\begin{equation}
+G(x, t) = C(s(t)) + D(x)
+\end{equation}
+\begin{equation}
+\frac{ds(t)}{dt} = A(t)s(t) + B(t)x
+\end{equation}
+This approach allows the network to maintain a compact state representation $s(t)$ that evolves continuously over time according to the differential equation. The matrices $A(t)$ and $B(t)$ control how the state evolves, while $C$ and $D$ determine how the state influences the output. This is particularly efficient for capturing long-range dependencies without the quadratic complexity of attention mechanisms.
+
+\textbf{4. Multi-scale Integration:}
+Perhaps most importantly, our space-time processing creates a structured hierarchy of timescales that organizes information flow. Fast-changing patterns are processed at lower levels, while slower, more abstract patterns emerge at higher levels. This multi-scale integration allows the Digital Neocortex to simultaneously track immediate details and long-term context, similar to how the biological neocortex maintains both immediate sensory awareness and broader situational understanding.
+
+By implementing these space-time processing mechanisms, the Digital Neocortex transforms the unstructured, continuous-time dynamics of LNNs into organized processing sequences. The chaotic "thoughts" of the LNN become structured into coherent processing pathways that can efficiently solve complex tasks requiring both spatial understanding and temporal reasoning.
+
+\subsection{Digital Neocortex: Bringing It All Together}
+The Digital Neocortex represents a comprehensive framework that enhances Liquid Neural Networks by providing the organizational structure they inherently lack. Let's summarize how the components we've discussed work together to transform chaotic, unorganized dynamic representations into coherent, efficient neural processing:
+
+
+\textbf{1. The Foundation: Liquid Neural Networks}\\
+At its core, the Digital Neocortex builds upon the powerful continuous-time dynamics of Liquid Neural Networks. These networks, with their differential equation-governed neurons and liquid time-constants, provide the raw computational power and adaptability that serve as our foundation.
+
+\textbf{2. The Organizational Framework}\\
+Upon this foundation, we've built a structured organizational framework with three key mechanisms:
+\begin{itemize}
+    \item \textbf{Specialization via Cortical Columns:} The $\Omega$ function channels dynamic representations into specialized processing pathways, creating a division of labor similar to the columnar organization of the biological neocortex.
+    \item \textbf{Attention Direction via Sparse Activation:} The $\Psi$ function implements a continuous-time sparse activation mechanism that focuses computational resources on the most relevant information, similar to how biological attention works.
+    \item \textbf{Temporal Organization via Space-Time Processing:} The $\Phi$ function structures the flow of information over time, creating a coherent sequence of processing steps that integrates information across multiple time scales.
+\end{itemize}
+
+\textbf{3. Continuous Adaptation via Hebbian Learning}\\
+The Hebbian learning mechanism allows the network to continuously adapt its connection strengths based on experience, enabling ongoing learning and memory formation within the network structure itself.
+
+\textbf{The Complete Transformation}\\
+These components work together to implement the complete Digital Neocortex transformation:
+
+\begin{equation}
+F_{DN}(x, t) = \Phi(\Psi(\Omega(x, t)), t)
+\end{equation}
+
+This transformation doesn't replace the dynamic capabilities of LNNs but rather harnesses and directs them toward efficient problem-solving. The result is a neural architecture that combines the adaptability and continuous-time dynamics of LNNs with the structured organization of the biological neocortex.
+
+By guiding the "thoughts" of LNNs through specialized pathways, focusing attention on relevant information, organizing temporal processing, and continuously adapting connection strengths, the Digital Neocortex creates a more brain-like computational model that can efficiently solve complex tasks requiring pattern recognition, long-range dependencies, and adaptive behavior.
+
+
+
+\section{Experimental Results}
+\label{sec:experiments}
+
+We evaluated the Digital Neocortex on pattern recognition tasks, specifically focusing on pattern replication, which tests the model's ability to accurately reproduce complex input patterns. We compared our architecture with two baseline models: standard Liquid Neural Networks (LNN) and the enhanced Dynamic Weight LNN. Table \ref{tab:performance} summarizes the key performance metrics after 2 epochs of training.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{|l|c|c|c|}
+  \hline
+  \textbf{Model} & \textbf{MSE} & \textbf{Accuracy} & \textbf{Inference Time (s)} \\ \hline
+  LNN & 0.2339 & 0.4094 & 0.0013 \\ \hline
+  DynamicWeightLNN & 0.1595 & 0.7969 & 0.0067 \\ \hline
+  DigitalNeocortex & \textbf{0.0514} & \textbf{1.0000} & 0.0199 \\ \hline
+  \end{tabular}
+  \caption{Performance Comparison on Pattern Replication Task (2 epochs). The Digital Neocortex achieves perfect accuracy with significantly lower MSE than both baseline models, demonstrating its superior pattern recognition capabilities.}
+  \label{tab:performance}
+\end{table}
+
+The Digital Neocortex demonstrated exceptional performance, achieving perfect accuracy (100\%) with the lowest Mean Squared Error (MSE) of 0.0514. This represents a substantial improvement over the base LNN (40.94\% accuracy, 0.2339 MSE) and even the more advanced DynamicWeightLNN (79.69\% accuracy, 0.1595 MSE). While the Digital Neocortex has a slightly longer inference time (0.0199 seconds) compared to the baseline models, this trade-off is minimal considering the significant gains in accuracy and pattern reproduction quality.
+
+These results validate our hypothesis that enhancing Liquid Neural Networks with biologically-inspired organizational components significantly improves their performance on complex pattern recognition tasks. 
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth]{replication_accuracy.png}
+  \caption{Replication Accuracy}
+  \label{fig:architecture}
+\end{figure}
+
+\subsection{Training Convergence Analysis}
+The training loss curves provide additional insight into the learning dynamics of each model. As shown in Table~\ref{tab:training_loss}, the Digital Neocortex achieves the lowest final training loss after just 2 epochs, demonstrating its superior learning efficiency.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{|l|c|}
+  \hline
+  \textbf{Model} & \textbf{Final Training Loss (2 epochs)} \\ \hline
+  LNN & 0.2580 \\ \hline
+  DynamicWeightLNN & 0.1921 \\ \hline
+  DigitalNeocortex & \textbf{0.1041} \\ \hline
+  \end{tabular}
+  \caption{Training Loss Comparison. The Digital Neocortex achieves the lowest training loss after 2 epochs, indicating faster convergence and better learning efficiency.}
+  \label{tab:training_loss}
+\end{table}
+
+Figure~\ref{fig:training_curves} illustrates the training loss curves for all three models, showing how the Digital Neocortex converges more rapidly to a lower loss value. This faster convergence is a direct result of the biologically-inspired organizational components that guide the learning process more efficiently.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth]{replication_training_curves.png}
+  \caption{Training loss curves for LNN (blue), DynamicWeightLNN (orange), and Digital Neocortex (green). The Digital Neocortex shows faster convergence and reaches a lower final loss value, demonstrating its superior learning efficiency.}
+  \label{fig:training_curves}
+\end{figure}
+
+\section{Conclusion}
+We have presented the Digital Neocortex, a neural architecture that enhances Liquid Neural Networks with biologically-inspired organizational components derived from the human neocortex. While LNNs already provide powerful dynamic capabilities through their continuous-time neurons and liquid time-constants, the Digital Neocortex adds the critical organizational framework needed to harness this power effectively.
+
+By incorporating cortical columns, sparse attention, Hebbian learning, and space-time processing, our model transforms LNNs from powerful but potentially chaotic systems into organized, efficient problem-solvers. The Digital Neocortex preserves the adaptive strengths of LNNs while adding the structure that makes biological brains so effective at complex tasks.
+
+The key contributions of our work include:
+
+\begin{itemize}
+    \item Preserving the dynamic neuron capabilities of LNNs while adding organizational structure
+    \item Implementing cortical columns that specialize in different aspects of processing
+    \item Adding sparse attention mechanisms that focus computational resources
+    \item Incorporating Hebbian learning for more structured adaptation
+    \item Developing space-time processing layers that organize temporal information
+\end{itemize}
+
+The Digital Neocortex represents a significant step toward neural architectures that more closely mimic the computational principles of the human brain while building upon the dynamic foundation of Liquid Neural Networks. Future work will explore scaling this architecture to larger models and applying it to more complex tasks such as multimodal learning and embodied AI.
+
+%Bibliography
+\bibliographystyle{unsrt}  
+
+
+\end{document}

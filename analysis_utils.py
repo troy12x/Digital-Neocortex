@@ -330,7 +330,7 @@ class NeocortexAnalyzer:
         return similarity.item()
 
 def main():
-    from test_neocortex import TestPatterns
+    from test_neocortex_old import TestPatterns
     
     # Load test patterns and models
     test_patterns = TestPatterns()

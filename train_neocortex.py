@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from tqdm import tqdm
-from test_neocortex import TestPatterns
+from test_neocortex_old import TestPatterns
 
 class NeocortexTrainer:
     def __init__(self, config):

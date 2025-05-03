@@ -62,66 +62,115 @@ def calculate_similarity(original, reconstruction):
 class PatternReconstructor(nn.Module):
     def __init__(self):
         super(PatternReconstructor, self).__init__()
-        # Increase model capacity significantly
-        self.encoder = nn.Sequential(
-            nn.Conv2d(1, 64, 3, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(64, 128, 3, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(128, 256, 3, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(256, 512, 3, padding=1),
-            nn.ReLU()
-        )
         
-        self.bottleneck = nn.Sequential(
-            nn.Conv2d(512, 1024, 3, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(1024, 512, 3, padding=1),
-            nn.ReLU()
-        )
+        # Initial features
+        self.initial_features = 64
         
-        self.decoder = nn.Sequential(
-            nn.Conv2d(512, 256, 3, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(256, 128, 3, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(128, 64, 3, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(64, 1, 3, padding=1),
+        # Encoder blocks with consistent dimensions
+        self.encoder = nn.ModuleList([
+            # Initial conv (64x64 -> 64x64)
+            nn.Sequential(
+                nn.Conv2d(1, self.initial_features, 3, padding=1),
+                nn.BatchNorm2d(self.initial_features),
+                nn.LeakyReLU(0.2)
+            ),
+            # Down 1 (64x64 -> 32x32)
+            nn.Sequential(
+                nn.Conv2d(self.initial_features, self.initial_features*2, 4, stride=2, padding=1),
+                nn.BatchNorm2d(self.initial_features*2),
+                nn.LeakyReLU(0.2)
+            ),
+            # Down 2 (32x32 -> 16x16)
+            nn.Sequential(
+                nn.Conv2d(self.initial_features*2, self.initial_features*4, 4, stride=2, padding=1),
+                nn.BatchNorm2d(self.initial_features*4),
+                nn.LeakyReLU(0.2)
+            ),
+            # Down 3 (16x16 -> 8x8)
+            nn.Sequential(
+                nn.Conv2d(self.initial_features*4, self.initial_features*8, 4, stride=2, padding=1),
+                nn.BatchNorm2d(self.initial_features*8),
+                nn.LeakyReLU(0.2)
+            )
+        ])
+        
+        # Attention at bottleneck
+        self.attention = nn.Sequential(
+            nn.Conv2d(self.initial_features*8, self.initial_features*8, 1),
             nn.Sigmoid()
         )
         
-        # Add residual connections
-        self.skip1 = nn.Conv2d(64, 64, 1)
-        self.skip2 = nn.Conv2d(128, 128, 1)
-        self.skip3 = nn.Conv2d(256, 256, 1)
-        self.skip4 = nn.Conv2d(512, 512, 1)
-
+        # Decoder blocks with matching dimensions
+        self.decoder = nn.ModuleList([
+            # Up 1 (8x8 -> 16x16)
+            nn.Sequential(
+                nn.ConvTranspose2d(self.initial_features*8, self.initial_features*4, 4, stride=2, padding=1),
+                nn.BatchNorm2d(self.initial_features*4),
+                nn.LeakyReLU(0.2)
+            ),
+            # Up 2 (16x16 -> 32x32)
+            nn.Sequential(
+                nn.ConvTranspose2d(self.initial_features*8, self.initial_features*2, 4, stride=2, padding=1),
+                nn.BatchNorm2d(self.initial_features*2),
+                nn.LeakyReLU(0.2)
+            ),
+            # Up 3 (32x32 -> 64x64)
+            nn.Sequential(
+                nn.ConvTranspose2d(self.initial_features*4, self.initial_features, 4, stride=2, padding=1),
+                nn.BatchNorm2d(self.initial_features),
+                nn.LeakyReLU(0.2)
+            )
+        ])
+        
+        # Edge enhancement
+        self.edge_detect = nn.Sequential(
+            nn.Conv2d(self.initial_features*2, self.initial_features, 3, padding=1),
+            nn.BatchNorm2d(self.initial_features),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(self.initial_features, 1, 1),
+            nn.Sigmoid()
+        )
+        
+        # Final output
+        self.final = nn.Sequential(
+            nn.Conv2d(self.initial_features*2, self.initial_features, 3, padding=1),
+            nn.BatchNorm2d(self.initial_features),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(self.initial_features, 1, 1),
+            nn.Tanh()
+        )
+    
     def forward(self, x):
-        # Encoder with skip connections
-        e1 = self.encoder[0:2](x)
-        skip1 = self.skip1(e1)
+        if len(x.shape) == 3:
+            x = x.unsqueeze(1)
         
-        e2 = self.encoder[2:4](e1)
-        skip2 = self.skip2(e2)
+        # Store encoder outputs
+        encoder_features = []
         
-        e3 = self.encoder[4:6](e2)
-        skip3 = self.skip3(e3)
+        # Encoding
+        for block in self.encoder:
+            x = block(x)
+            encoder_features.append(x)
         
-        e4 = self.encoder[6:8](e3)
-        skip4 = self.skip4(e4)
+        # Apply attention at bottleneck
+        attention = self.attention(x)
+        x = x * attention
         
-        # Bottleneck
-        b = self.bottleneck(e4)
+        # Decoding with proper skip connections
+        for i, block in enumerate(self.decoder):
+            # Get corresponding encoder features
+            skip_features = encoder_features[-(i+2)]
+            # Upsample current features
+            x = block(x)
+            # Concatenate with skip connection
+            x = torch.cat([x, skip_features], dim=1)
         
-        # Decoder with skip connections
-        d4 = self.decoder[0:2](b + skip4)
-        d3 = self.decoder[2:4](d4 + skip3)
-        d2 = self.decoder[4:6](d3 + skip2)
-        d1 = self.decoder[6:8](d2 + skip1)
+        # Final processing with edge enhancement
+        edge_map = self.edge_detect(x)
+        main_output = self.final(x)
+        enhanced_output = main_output * (1 + 0.5 * edge_map)
         
-        return d1
+        return torch.sigmoid(enhanced_output)
 
 def train_until_similarity(model, pattern, pattern_name, target_similarity=0.9, max_epochs=10000, learning_rate=0.002):
     """Train the model until reaching target similarity or max epochs"""
@@ -263,60 +312,34 @@ def train_until_similarity(model, pattern, pattern_name, target_similarity=0.9, 
 
 def plot_results(original, reconstruction, title, noise_level=None):
     """Plot original vs reconstructed patterns"""
-    plt.figure(figsize=(12, 5), dpi=150)  # Higher DPI for sharper images
+    plt.figure(figsize=(12, 5))
     
-    # Convert tensors to numpy arrays
+    # Ensure we're working with numpy arrays
     original_np = original.cpu().detach().numpy().reshape(32, 32)
     reconstruction_np = reconstruction.cpu().detach().numpy().reshape(32, 32)
     
-    # Apply sigmoid to reconstruction if not already applied
-    if reconstruction_np.min() < 0 or reconstruction_np.max() > 1:
-        reconstruction_np = 1 / (1 + np.exp(-reconstruction_np))
+    # Normalize values to [0, 1] range for consistent visualization
+    original_np = (original_np - original_np.min()) / (original_np.max() - original_np.min() + 1e-8)
+    reconstruction_np = (reconstruction_np - reconstruction_np.min()) / (reconstruction_np.max() - reconstruction_np.min() + 1e-8)
     
-    # Threshold values for sharper edges
-    def threshold_array(arr, threshold=0.5):
-        # For center dot pattern, use dynamic thresholding
-        if "center_dot" in title.lower():
-            threshold = 0.3
-        binary = arr > threshold
-        return binary.astype(float)
-    
-    # Apply thresholding for binary-like patterns
-    if any(pattern in title.lower() for pattern in ['center_dot', 'text_', 'checkerboard']):
-        reconstruction_np = threshold_array(reconstruction_np)
-    
-    # Plot original
     plt.subplot(121)
-    plt.imshow(original_np, cmap='gray', interpolation='nearest', vmin=0, vmax=1)
+    plt.imshow(original_np, cmap='gray', interpolation='nearest')
     plt.title('Original' if noise_level is None else f'Noisy (level={noise_level})')
     plt.axis('off')
     
-    # Plot reconstruction
     plt.subplot(122)
-    plt.imshow(reconstruction_np, cmap='gray', interpolation='nearest', vmin=0, vmax=1)
+    plt.imshow(reconstruction_np, cmap='gray', interpolation='nearest')
     plt.title('Reconstruction')
     plt.axis('off')
     
-    # Add similarity score
-    similarity = calculate_similarity(torch.tensor(original_np), torch.tensor(reconstruction_np))
-    plt.suptitle(f"{title} (Similarity: {similarity:.4f})")
-    
-    # Adjust layout
+    plt.suptitle(f"{title} (Similarity: {calculate_similarity(torch.tensor(original_np), torch.tensor(reconstruction_np)):.4f})")
     plt.tight_layout()
     
-    # Save with high quality settings
+    # Save the plot with high quality settings
     os.makedirs('results', exist_ok=True)
     clean_title = title.replace(" ", "_").lower()
     noise_suffix = f"_noise_{noise_level}" if noise_level is not None else ""
-    plt.savefig(f'results/{clean_title}{noise_suffix}.png', 
-                dpi=300,  # Higher DPI for saved files
-                bbox_inches='tight', 
-                pad_inches=0.2,
-                facecolor='white',
-                edgecolor='none',
-                format='png',
-                transparent=False,
-                metadata={'Creator': 'Pattern Reconstructor'})
+    plt.savefig(f'results/{clean_title}{noise_suffix}.png', dpi=200, bbox_inches='tight', pad_inches=0.2)
     plt.close()
 
 def test_pattern_reconstruction():

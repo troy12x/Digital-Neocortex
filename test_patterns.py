@@ -119,24 +119,82 @@ def create_noise_pattern(size=32, base_pattern_func=create_checkerboard_pattern,
         patterns.append(pattern)
     return patterns
 
-def generate_simple_patterns(pattern_type='checkerboard', size=32, noise_level=0.0):
-    """Generate patterns based on type"""
-    pattern_functions = {
-        'checkerboard': create_checkerboard_pattern,
-        'stripes': create_stripes_pattern,
-        'gradient': create_gradient_pattern,
-        'center_dot': create_center_dot_pattern,
-        'spiral': create_spiral_pattern,
-        'concentric': create_concentric_circles_pattern,
-        'random_dots': create_random_dots_pattern,
-        'text_A': lambda size, noise_level: create_text_pattern(size, "A", noise_level),
-        'text_B': lambda size, noise_level: create_text_pattern(size, "B", noise_level),
-    }
+def generate_simple_patterns(pattern_type, size=64, noise_level=0.0):
+    """Generate simple geometric patterns."""
+    pattern = torch.zeros((1, 1, size, size))
+    center = size // 2
+    radius = size // 4
     
-    if pattern_type in pattern_functions:
-        return pattern_functions[pattern_type](size=size, noise_level=noise_level)
+    if pattern_type == "circle":
+        for i in range(size):
+            for j in range(size):
+                if (i - center) ** 2 + (j - center) ** 2 <= radius ** 2:
+                    pattern[0, 0, i, j] = 1.0
+                    
+    elif pattern_type == "square":
+        start = center - radius
+        end = center + radius
+        pattern[0, 0, start:end, start:end] = 1.0
+        
+    elif pattern_type == "triangle":
+        # Generate an equilateral triangle
+        height = int(radius * 1.732)  # sqrt(3) ≈ 1.732
+        
+        # Calculate triangle vertices
+        x0, y0 = center, center - height//2  # top vertex
+        x1, y1 = center - radius, center + height//2  # bottom left
+        x2, y2 = center + radius, center + height//2  # bottom right
+        
+        # Fill triangle using barycentric coordinates
+        for i in range(center - radius, center + radius + 1):
+            for j in range(center - height//2, center + height//2 + 1):
+                # Calculate barycentric coordinates
+                w1 = ((y2 - y1) * (i - x1) + (x1 - x2) * (j - y1)) / float((y2 - y1) * (x0 - x1) + (x1 - x2) * (y0 - y1))
+                w2 = ((y0 - y2) * (i - x2) + (x2 - x0) * (j - y2)) / float((y0 - y2) * (x1 - x2) + (x2 - x0) * (y1 - y2))
+                w0 = 1 - w1 - w2
+                
+                # If point is inside triangle
+                if w0 >= 0 and w1 >= 0 and w2 >= 0:
+                    pattern[0, 0, j, i] = 1.0
+        
+    elif pattern_type == "hexagon":
+        # Generate regular hexagon
+        for i in range(size):
+            for j in range(size):
+                x = i - center
+                y = j - center
+                if abs(x) <= radius and abs(y) <= radius * 0.866:  # sqrt(3)/2 ≈ 0.866
+                    if abs(y) <= radius * 0.866 - (radius * 0.866 / radius) * abs(x):
+                        pattern[0, 0, i, j] = 1.0
+                        
+    elif pattern_type == "spiral":
+        # Generate spiral pattern
+        for t in np.linspace(0, 6*np.pi, 1000):
+            r = t * radius / (6*np.pi)
+            x = int(center + r * np.cos(t))
+            y = int(center + r * np.sin(t))
+            if 0 <= x < size and 0 <= y < size:
+                pattern[0, 0, x, y] = 1.0
+                
+        # Thicken the spiral
+        kernel_size = 3
+        kernel = torch.ones((1, 1, kernel_size, kernel_size))
+        pattern = torch.nn.functional.conv2d(
+            pattern, 
+            kernel, 
+            padding=kernel_size//2
+        )
+        pattern = (pattern > 0).float()
+    
     else:
         raise ValueError(f"Unknown pattern type: {pattern_type}")
+    
+    # Add noise if specified
+    if noise_level > 0:
+        noise = torch.randn_like(pattern) * noise_level
+        pattern = torch.clamp(pattern + noise, 0, 1)
+    
+    return pattern
 
 def test_noise_robustness(model, pattern_type='checkerboard', noise_levels=[0.1, 0.2, 0.3]):
     """Test model's robustness to noise"""
@@ -165,24 +223,105 @@ def test_pattern_batch(batch_size=32, size=32):
         
     return torch.cat(patterns, dim=0)
 
-def create_center_dot_pattern(size=32, noise_level=0.0):
-    """Create a pattern with a distinct dot in the center"""
-    pattern = torch.zeros((1, 1, size, size))
-    center = size // 2
+def generate_test_patterns(batch_size=32, size=64):
+    """Generate a diverse set of test patterns for evaluation."""
+    patterns = []
+    pattern_types = [
+        'checkerboard',
+        'stripes',
+        'gradient',
+        'center_dot',
+        'spiral',
+        'concentric',
+        'random_dots',
+        'text'
+    ]
     
-    # Create a more distinct center dot with a sharp edge
-    dot_radius = size // 8  # Smaller, more distinct dot
+    for _ in range(batch_size):
+        # Randomly select pattern type
+        pattern_type = np.random.choice(pattern_types)
+        
+        # Generate base pattern
+        if pattern_type == 'checkerboard':
+            pattern = create_checkerboard_pattern(size)
+        elif pattern_type == 'stripes':
+            pattern = create_stripes_pattern(size)
+        elif pattern_type == 'gradient':
+            pattern = create_gradient_pattern(size)
+        elif pattern_type == 'center_dot':
+            pattern = create_center_dot_pattern(size)
+        elif pattern_type == 'spiral':
+            pattern = create_spiral_pattern(size)
+        elif pattern_type == 'concentric':
+            pattern = create_concentric_circles_pattern(size)
+        elif pattern_type == 'random_dots':
+            pattern = create_random_dots_pattern(size)
+        else:  # text
+            pattern = create_text_pattern(size, text=chr(np.random.randint(65, 91)))
+        
+        # Convert to complex representation (2 channels)
+        magnitude = pattern.squeeze()
+        phase = torch.rand_like(magnitude) * 2 * np.pi
+        real = magnitude * torch.cos(phase)
+        imag = magnitude * torch.sin(phase)
+        complex_pattern = torch.stack([real, imag], dim=0).unsqueeze(0)
+        
+        # Normalize each channel independently
+        for c in range(2):
+            channel = complex_pattern[:, c:c+1]
+            min_val = channel.min()
+            max_val = channel.max()
+            if max_val > min_val:
+                complex_pattern[:, c:c+1] = (channel - min_val) / (max_val - min_val)
+        
+        patterns.append(complex_pattern)
     
-    for i in range(size):
-        for j in range(size):
-            # Calculate distance from center
-            dist = np.sqrt((i - center) ** 2 + (j - center) ** 2)
-            # Sharp edge for the dot
-            if dist <= dot_radius:
-                pattern[0, 0, i, j] = 1.0
-            else:
-                pattern[0, 0, i, j] = 0.0
+    # Stack into batch
+    batch = torch.cat(patterns, dim=0)
     
-    if noise_level > 0:
-        pattern = add_noise(pattern, noise_level)
-    return pattern
+    # Verify tensor properties
+    assert not torch.isnan(batch).any(), "NaN values in generated patterns"
+    assert not torch.isinf(batch).any(), "Inf values in generated patterns"
+    assert batch.min() >= 0 and batch.max() <= 1, "Values outside [0,1] range"
+    assert batch.size(1) == 2, "Wrong number of channels"
+    assert batch.size(-1) == size and batch.size(-2) == size, "Wrong spatial dimensions"
+    
+    return batch
+
+def add_noise_to_patterns(patterns: torch.Tensor, noise_level: float = 0.1) -> torch.Tensor:
+    """Add controlled noise to patterns for robustness testing."""
+    noise = torch.randn_like(patterns) * noise_level
+    return patterns + noise
+
+def create_corrupted_patterns(patterns: torch.Tensor, corruption_ratio: float = 0.3):
+    """Create partially corrupted patterns for reconstruction testing."""
+    # Create binary mask (1 = keep, 0 = corrupt)
+    mask = torch.bernoulli(torch.full_like(patterns, 1 - corruption_ratio))
+    
+    # Apply mask and add noise to corrupted regions
+    corrupted = patterns * mask
+    noise = torch.randn_like(patterns) * 0.1
+    corrupted = corrupted + (1 - mask) * noise
+    
+    # Normalize corrupted patterns
+    for b in range(corrupted.size(0)):
+        for c in range(corrupted.size(1)):
+            channel = corrupted[b, c:c+1]
+            min_val = channel.min()
+            max_val = channel.max()
+            if max_val > min_val:
+                corrupted[b, c:c+1] = (channel - min_val) / (max_val - min_val)
+    
+    return corrupted
+
+def generate_pattern_sequence(length: int = 10, size: int = 64) -> torch.Tensor:
+    """Generate a sequence of related patterns for temporal pattern testing."""
+    sequence = []
+    base_pattern = generate_test_patterns(batch_size=1, size=size)
+    
+    for i in range(length):
+        # Evolve the pattern
+        evolved = base_pattern + torch.randn_like(base_pattern) * 0.1 * i
+        sequence.append(evolved)
+    
+    return torch.cat(sequence, dim=0)

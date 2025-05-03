@@ -1,67 +1,55 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
-import pandas as pd
-from typing import Dict, List
+import torch
+import numpy as np
 
-def visualize_training_progress(metrics_tracker):
-    fig = plt.figure(figsize=(20, 15))
+class NeocortexVisualizer:
+    def __init__(self):
+        self.fig_size = (12, 8)
     
-    # Plot pattern-specific losses
-    ax1 = plt.subplot(3, 2, 1)
-    plot_pattern_losses(metrics_tracker.pattern_losses, ax1)
+    def plot_attention_patterns(self, attention_weights):
+        """Visualize attention patterns"""
+        plt.figure(figsize=self.fig_size)
+        sns.heatmap(attention_weights.detach().numpy(), 
+                   cmap='viridis',
+                   xticklabels=False,
+                   yticklabels=False)
+        plt.title('Attention Patterns')
+        plt.show()
     
-    # Plot attention evolution
-    ax2 = plt.subplot(3, 2, 2)
-    plot_attention_metrics(metrics_tracker.attention_stats, ax2)
+    def plot_memory_access(self, memory_weights):
+        """Visualize memory access patterns"""
+        plt.figure(figsize=self.fig_size)
+        plt.plot(memory_weights.detach().numpy())
+        plt.title('Memory Access Patterns')
+        plt.xlabel('Memory Location')
+        plt.ylabel('Access Weight')
+        plt.show()
     
-    # Plot memory statistics
-    ax3 = plt.subplot(3, 2, 3)
-    plot_memory_stats(metrics_tracker.memory_stats, ax3)
-    
-    # Plot layer statistics
-    ax4 = plt.subplot(3, 2, 4)
-    plot_layer_stats(metrics_tracker.layer_stats, ax4)
-    
-    plt.tight_layout()
-    plt.show()
+    def plot_processing_steps(self, outputs_dict):
+        """Visualize processing steps"""
+        num_steps = len(outputs_dict)
+        fig, axes = plt.subplots(1, num_steps, figsize=(15, 5))
+        
+        for i, (name, tensor) in enumerate(outputs_dict.items()):
+            if isinstance(tensor, torch.Tensor):
+                sns.heatmap(tensor.detach().numpy()[:10, :10], 
+                           ax=axes[i],
+                           cmap='viridis')
+                axes[i].set_title(name)
+        
+        plt.tight_layout()
+        plt.show()
 
-def plot_pattern_losses(pattern_losses: Dict[str, List[float]], ax):
-    df = pd.DataFrame(pattern_losses)
-    sns.lineplot(data=df, ax=ax)
-    ax.set_title('Pattern-Specific Learning Curves')
-    ax.set_xlabel('Training Step')
-    ax.set_ylabel('Loss')
-
-def plot_attention_metrics(attention_stats: Dict[str, List[float]], ax):
-    df = pd.DataFrame(attention_stats)
-    sns.lineplot(data=df, ax=ax)
-    ax.set_title('Attention Metrics Evolution')
-    ax.set_xlabel('Training Step')
-    ax.set_ylabel('Metric Value')
-
-def plot_memory_stats(memory_stats: Dict[str, List[float]], ax):
-    df = pd.DataFrame(memory_stats)
-    sns.lineplot(data=df, ax=ax)
-    ax.set_title('Memory Statistics')
-    ax.set_xlabel('Training Step')
-    ax.set_ylabel('Metric Value')
-
-def plot_layer_stats(layer_stats: Dict[str, List[Dict]], ax):
-    # Reshape layer statistics for plotting
-    data = []
-    for layer_name, stats_list in layer_stats.items():
-        for step, stats in enumerate(stats_list):
-            for metric, value in stats.items():
-                data.append({
-                    'Layer': layer_name,
-                    'Step': step,
-                    'Metric': metric,
-                    'Value': value
-                })
+def visualize_inference(model_outputs, visualizer):
+    """Visualize the inference results"""
+    # Plot attention patterns if available
+    if 'attention' in model_outputs:
+        visualizer.plot_attention_patterns(model_outputs['attention'])
     
-    df = pd.DataFrame(data)
-    sns.lineplot(
-        data=df, x='Step', y='Value', 
-        hue='Layer', style='Metric', ax=ax
-    )
-    ax.set_title('Layer-wise Statistics') 
+    # Plot memory access if available
+    if 'memory_access' in model_outputs:
+        visualizer.plot_memory_access(model_outputs['memory_access'])
+    
+    # Plot processing steps
+    visualizer.plot_processing_steps(model_outputs) 
